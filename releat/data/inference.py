@@ -125,7 +125,7 @@ def init_feature_dict(config, tick_data, now):
             broker = fc.broker
 
             if symbol != prev_symbol:
-                df = tick_data[symbol]
+                df = tick_data[f"{broker}_{symbol}"]
 
                 # Get the last timestamp of the previous feature timeframe
                 dt0 = df[df["time_msc"] < dt0]["time_msc"].iloc[-1] - pd.Timedelta(
@@ -220,8 +220,7 @@ def update_feature_dict(config, tick_data, feature_data, trade_time):
             broker = fc.broker
 
             if symbol != prev_symbol:
-                df = tick_data[symbol]
-
+                df = tick_data[f"{broker}_{symbol}"]
                 dt0 = trade_time - pd.Timedelta(feat_group.timeframe.replace("m", "T"))
                 dt0 = df[df["time_msc"] < dt0]["time_msc"].index[-1]
 

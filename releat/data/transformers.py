@@ -452,7 +452,7 @@ def get_transform_params_for_one_feature_group(config, feat_group_ind):
                             lambda x: x.take_every(take_every_num).head(obs_len),
                         ),
                     )
-                    .filter(pl.col("group_ind" >= 0))
+                    .filter(pl.col("group_ind") >= 0)
                     .with_columns(pl.lit(df_raw["time_msc"]).alias("time_msc"))
                 )
                 df = df.head(len(df) - int(obs_len * num * mult))

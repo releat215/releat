@@ -17,7 +17,7 @@ agent_config = {
     "rl_algorithm": "impala",
     # tick data param
     "raw_data": {
-        "tick_file_dates": ["2023-06-01"],
+        "tick_file_dates": ["2023-11-01"],
         "trade_timeframe": "10s",
         "tick_time_diff_clip_val": 60,
         "min_inf_time_s": "500ms",

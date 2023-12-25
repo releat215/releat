@@ -110,7 +110,7 @@ class TickHandler:
 
         # TODO check that this is correct for futures
         cols = ["ask", "bid", "flags", "last", "time_msc", "volume", "volume_real"]
-        for result in self.executor.map(lambda p: download_tick_data(*p), args):
+        for result in self.executor.map(lambda p: download_tick_data(*args), args):
             tick_df = result["tick_df"][cols]
             broker = result["broker"]
             symbol = result["symbol"]
@@ -126,6 +126,7 @@ class TickHandler:
                 new datetime for pulling data in the format "%Y-%m-%d %H:%M:%S.%f"
 
         """
+        dt1 = datetime.strptime(dt1, "%Y-%m-%d %H:%M:%S.%f")
         new_data = {}
         dt0s = {}
         args = []
@@ -134,6 +135,7 @@ class TickHandler:
             dt0 = old_df["time_msc"].iloc[-1]
             dt0s[f"{si.broker}_{si.symbol}"] = dt0
             dt0 = dt0.replace(microsecond=0)
+            dt0 = dt0.to_pydatetime()
 
             args = [si.broker, si.symbol]
             # TODO add in some broker timezone calculations
@@ -142,13 +144,13 @@ class TickHandler:
 
         # TODO check that this is correct for futures
         cols = ["ask", "bid", "flags", "last", "time_msc", "volume", "volume_real"]
-        for result in self.executor.map(lambda p: download_tick_data(*p), args):
+        for result in self.executor.map(lambda p: download_tick_data(*args), args):
             broker = result["broker"]
             symbol = result["symbol"]
             tick_df = result["tick_df"][cols]
             dt0 = pd.to_datetime(dt0s[f"{broker}_{symbol}"]).replace(microsecond=0)
             tick_df = tick_df[tick_df["time_msc"] >= dt0]
-            self.new_data[f"{broker}_{symbol}"] = tick_df
+            new_data[f"{broker}_{symbol}"] = tick_df
 
         # for symbol in self.symbols:
         #     old_df = self.tick_data[f"{symbol}"]
@@ -196,8 +198,8 @@ class TickHandler:
             udf = self.check_data[f"{si.broker}_{si.symbol}"]
 
             # get data from MT5 that spans the previous to new datetime range
-            dt0 = udf["time_msc"].iloc[0]
-            dt1 = udf["time_msc"].iloc[-1]
+            dt0 = pd.to_datetime(udf["time_msc"].iloc[0])
+            dt1 = pd.to_datetime(udf["time_msc"].iloc[-1])
 
             result = download_tick_data(
                 si.broker,
@@ -211,12 +213,12 @@ class TickHandler:
             tick_df = result["tick_df"][cols]
 
             # ignore leading and trailing records de to microseconds
-            tick_df = tick_df[tick_df["time_msc"] > pd.to_datetime(dt0)]
-            tick_df = tick_df[tick_df["time_msc"] < pd.to_datetime(dt1)]
+            tick_df = tick_df[tick_df["time_msc"] > dt0]
+            tick_df = tick_df[tick_df["time_msc"] < dt1]
             tick_df.reset_index(drop=True, inplace=True)
 
-            udf = udf[udf["time_msc"] > pd.to_datetime(dt0)]
-            udf = udf[udf["time_msc"] < pd.to_datetime(dt1)]
+            udf = udf[udf["time_msc"] > dt0]
+            udf = udf[udf["time_msc"] < dt1]
             udf.reset_index(drop=True, inplace=True)
 
             # assert that the concatenated ticks are the same as the downloaded ticks

@@ -307,6 +307,7 @@ def calc_gradient_feature(df_group, fc, pip):
         .with_columns(pl.col("feat").cast(pl.List(pl.Float32)))
         .with_columns(pl.col("feat").list.get(0))
         .select(["time_msc", "feat"])
+        .lazy()
         .collect(streaming=True)
     )
 

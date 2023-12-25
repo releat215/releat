@@ -48,7 +48,7 @@ class SignalGenerator:
         self.rla.reload_checkpoint()
 
         # tick handler extracts and aggregates data from mt5
-        self.th = TickHandler(agent_version, symbol="general")
+        self.th = TickHandler(agent_version)
 
         # manages the gym and mt5 representation of active positions
         self.pm = PortfolioManager(agent_version)
